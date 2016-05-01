@@ -1,7 +1,7 @@
 #coding:utf-8
 '''
     GPU run command:
-        THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 python cnn.py
+        THEANO_FLAGS=mode=FAST_RUN,device=gpu0,floatX=float32 python cnn.py
     CPU run command:
         python cnn.py
     Tensorflow
@@ -20,29 +20,24 @@ from keras.utils import np_utils, generic_utils
 import random, cPickle
 
 
-from data1 import load_data
-
+from data1 import load_n
 
 #加载数据
-data, label = load_data()
+data, label = load_n()
 classes = 36
 #打乱数据
 index = [i for i in range(len(data))]
 random.shuffle(index)
 data = data[index]
-data = data/255
+label = np_utils.to_categorical(label, classes)
 label = label[index]
 print(data.shape[0], ' samples')
 #label为0~36共36个类别，keras要求格式为binary class matrices,转化一下，直接调用keras提供的这个函数
-label = np_utils.to_categorical(label, classes)
 # print (data)
 ###############
 #开始建立CNN模型
 ###############
 
-max_features = 10000
-embedding_dims = 100
-maxlen = 100
 
 
 #生成一个model
@@ -107,7 +102,7 @@ model.compile(loss='categorical_crossentropy', optimizer=sgd, class_mode="catego
 #调用fit方法，就是一个训练过程. 训练的epoch数设为10，batch_size为128．
 #数据经过随机打乱shuffle=True。verbose=1，训练过程中输出的信息，0、1、2三种方式都可以，无关紧要。show_accuracy=True，训练时每一个epoch都输出accuracy。
 #validation_split=0.2，将20%的数据作为验证集。
-hist = model.fit(data, label, batch_size=64, nb_epoch=100, shuffle=True, verbose=1, show_accuracy=True, validation_split=0.0, callbacks=[checkpointer])
+hist = model.fit(data, label, batch_size=64, nb_epoch=10, shuffle=True, verbose=1, show_accuracy=True, validation_split=0.05, callbacks=[checkpointer])
 model.save_weights('./model/my_model_weights.h5')
 # print(hist.history)
 # test_data = get_data("./test_img/Audi奥迪_3.jpg")
